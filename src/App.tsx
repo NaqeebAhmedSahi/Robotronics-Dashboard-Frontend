@@ -8,11 +8,15 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Customers = lazy(() => import("./pages/Customers"));
 const Products = lazy(() => import("./pages/Products"));
 const Courses = lazy(() => import("./pages/Courses"));
+const RoboGenius = lazy(() => import("./pages/RoboGenius"));
+
 const Transactions = lazy(() => import("./pages/Transactions"));
 const ProductManagemnet = lazy(() => import("./pages/management/ProductManagemnet"));
 const TransactionManagement = lazy(() => import("./pages/management/TransactionManagement"));
 const NewProduct = lazy(() => import("./pages/management/NewProduct"));
 const NewCourses = lazy(() => import("./pages/management/NewCourses"));
+const NewRoboGenius = lazy(() => import("./pages/management/NewRoboGenius"));
+
 const CoursesManagemnet = lazy(() => import("./pages/management/CoursesManagement"));
 const BarCharts = lazy(() => import("./pages/charts/BarCharts"));
 const PieCharts = lazy(() => import("./pages/charts/PieCharts"));
@@ -20,6 +24,8 @@ const LineCharts = lazy(() => import("./pages/charts/LineCharts"));
 const Coupons = lazy(() => import("./pages/apps/Coupons"));
 const Toss = lazy(() => import("./pages/apps/Toss"));
 const StopWatch = lazy(() => import("./pages/apps/StopWatch"));
+// const RoboGenius => import("./pages/apps/"));
+
 
 const App = () => {
 	return (
@@ -32,6 +38,9 @@ const App = () => {
 					<Route path="/admin/courses" element={<Courses />} />
 					<Route path="/admin/transaction" element={<Transactions />} />
 					<Route path="/admin/customer" element={<Customers />} />
+					<Route path="/admin/robo_genius" element={<RoboGenius />} />
+
+					
 
 					{/* charts */}
 					<Route path="/admin/chart/bar" element={<BarCharts />} />
@@ -45,6 +54,8 @@ const App = () => {
 
 					{/* management */}
 					<Route path="/admin/product/new" element={<NewProduct />} />
+					<Route path="/admin/robo_genius/new" element={<NewRoboGenius />} />
+
 					<Route path="/admin/product/:id" element={<ProductManagemnet />} />
 					<Route path="/admin/course/new" element={<NewCourses />} />
 					<Route path="/admin/course/:id" element={<CoursesManagemnet />} />

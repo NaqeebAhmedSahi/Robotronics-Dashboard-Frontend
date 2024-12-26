@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { AiFillFileText } from "react-icons/ai";
-import { FaChartBar, FaChartLine, FaChartPie, FaGamepad, FaStopwatch } from "react-icons/fa";
+import { FaChartBar, FaChartLine, FaChartPie, FaGamepad, FaStopwatch ,FaStar } from "react-icons/fa";
 import { HiMenuAlt4 } from "react-icons/hi";
 import { IoIosPeople } from "react-icons/io";
 import { RiCoupon3Fill, RiDashboardFill, RiShoppingBag3Fill } from "react-icons/ri";
@@ -71,8 +71,10 @@ const DivOne = ({ location }: { location: Location }) => (
 			<Li url="/admin/dashboard" text="Dashboard" Icon={RiDashboardFill} location={location} />
 			<Li url="/admin/product" text="Product" Icon={RiShoppingBag3Fill} location={location} />
 			<Li url="/admin/courses" text="Courses" Icon={SiCoursera} location={location} />
+			<Li url="/admin/robo_genius" text="RoboGenius" Icon={FaStar } location={location} />
 			<Li url="/admin/customer" text="Customer" Icon={IoIosPeople} location={location} />
 			<Li url="/admin/transaction" text="Transaction" Icon={AiFillFileText} location={location} />
+
 		</ul>
 	</div>
 );
