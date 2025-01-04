@@ -12,12 +12,12 @@ interface DataType {
   description: string;
   monthlyPrice: number;
   annualPrice: number;
-  category: "course" | "product";
+  category: string;
   whatYouLearn: string;
   targetAudience: string;
   image: string; 
-  averageRating: number;
   features: string; 
+  rating: number;
   createdAt: string;
   action: ReactElement;
 }
@@ -29,13 +29,13 @@ const columns: Column<DataType>[] = [
     Cell: ({ value }) => (
       <img
         src={value}
-        alt="Course"
+        alt="RoboGenius"
         style={{ width: "50px", height: "50px", objectFit: "cover" }}
       />
-    ), // Displaying the image
+    ),
   },
   {
-    Header: "name",
+    Header: "Title",
     accessor: "title",
   },
   {
@@ -55,29 +55,29 @@ const columns: Column<DataType>[] = [
     accessor: "category",
   },
   {
-    Header: "what You Learn",
+    Header: "What You Learn",
     accessor: "whatYouLearn",
   },
   {
-    Header: "target Audience",
+    Header: "Target Audience",
     accessor: "targetAudience",
   },
   {
-    Header: "averageRating",
-    accessor: "averageRating",
-  },
-  {
-    Header: "Feature",
+    Header: "Features",
     accessor: "features",
   },
   {
-    Header: "createdAt",
+    Header: "Rating",
+    accessor: "rating",
+  },
+  {
+    Header: "Created At",
     accessor: "createdAt",
   },
   {
     Header: "Action",
     accessor: "action",
-  }
+  },
 ];
 
 const RoboGenius = () => {
@@ -86,36 +86,31 @@ const RoboGenius = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/getProducts");
-  
-      // Log the fetched data
-      console.log("Fetched courses data:", response.data);
-  
-      const fetchProducts = response.data.map((products: any) => {
-        // Handle cases where image is null or has the object format
-        const imageUrl = products.image?.url || "http://localhost:8080/default-image.jpg";
-  
-        // Log each processed image URL
-        console.log("Processed Course Image URL:", imageUrl);
-  
+      const response = await axios.get("http://localhost:8080/getallRoboGenius");
+
+      console.log("Fetched data:", response.data);
+
+      const formattedData = response.data.map((item: any) => {
+        const imageUrl = item.image?.url || "http://localhost:8080/default-image.jpg";
+
         return {
-          name: products.name,
-          description: products.description,
-          stock: products.stock,
-          price: products.price,
-          category: products.category,
-          brand: products.brand,
+          title: item.title,
+          description: item.description,
+          monthlyPrice: item.monthlyPrice,
+          annualPrice: item.annualPrice,
+          category: item.category,
+          whatYouLearn: `${item.whatYouLearn.description}, ${item.whatYouLearn.skills}`,
+          targetAudience: item.targetAudience,
+          features: item.features,
+          rating: item.rating,
           image: imageUrl,
-          averageRating: products.averageRating,
-          // numOfReviews: products.numOfReviews,
-          createdAt: products.createdAt,
-         // Ensure a valid image URL
+          createdAt: new Date(item.createdAt).toLocaleDateString(),
           action: (
             <div className="action-buttons">
               <button
                 onClick={() =>
-                  navigate(`/admin/product/${products._id}`, {
-                    state: { products: products },
+                  navigate(`/admin/robo_genius/edit/${item._id}`, {
+                    state: { item },
                   })
                 }
                 className="update-button"
@@ -123,7 +118,7 @@ const RoboGenius = () => {
                 <FaEdit />
               </button>
               <button
-                onClick={() => handleDelete(products._id)}
+                onClick={() => handleDelete(item._id)}
                 className="delete-button"
               >
                 <FaTrashAlt />
@@ -132,33 +127,32 @@ const RoboGenius = () => {
           ),
         };
       });
-  
-    setData(fetchProducts);
+
+      setData(formattedData);
     } catch (error) {
-      console.error("Error fetching Products:", error);
+      console.error("Error fetching RoboGenius data:", error);
     }
   };
-  
-  
 
   useEffect(() => {
     fetchProducts();
-  }, [navigate]);
+  }, []);
 
-  const handleDelete = async (productId: string) => {
+  const handleDelete = async (id: string) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:8080/deleteProduct/${productId}`
-      );
+      const response = await axios.delete(`http://localhost:8080/deleteRoboGenius/${id}`);
       alert(response.data.message);
       fetchProducts();
     } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("Failed to delete product. Please try again.");
+      console.error("Error deleting RoboGenius:", error);
+      alert("Failed to delete. Please try again.");
     }
   };
 
-  const Table = useCallback(TableHOC<DataType>(columns, data, "dashboard-product-box", "RoboGenius", true), [data]);
+  const Table = useCallback(
+    TableHOC<DataType>(columns, data, "dashboard-product-box", "RoboGenius", true),
+    [data]
+  );
 
   return (
     <div className="admin-container">

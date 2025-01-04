@@ -15,7 +15,7 @@ const NewRoboGenius = () => {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [averageRating, setAverageRating] = useState<number>();
-  const [videoUrl, setVideoUrl] = useState<string>("");  // New state for video URL
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [submittedData, setSubmittedData] = useState<any>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +29,20 @@ const NewRoboGenius = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string); // You can reuse the preview state to hold the video URL as well
+      };
+      reader.readAsDataURL(file); // Read the video file as a data URL
+    }
+  };
+  
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +60,14 @@ const NewRoboGenius = () => {
       monthlyPrice,
       annualPrice,
       category,
-      whatYouLearn,  // Include the object that contains description and skills
+      whatYouLearn, // Include the object that contains description and skills
       targetAudience,
       features,
-      image: image ? image.name : null,
+      image: image ? image.name : null, // Save the image name if an image is uploaded
       averageRating,
-      videoUrl,  // Add videoUrl to dataEntry
+      video: videoFile ? videoFile.name : null, // Save the video file name if a video is uploaded
     };
+    
     console.log("Form Data as JSON:", dataEntry);
   
     try {
@@ -71,11 +86,18 @@ const NewRoboGenius = () => {
       formData.append("targetAudience", targetAudience);
       formData.append("features", features);
       formData.append("averageRating", averageRating?.toString() || "");
-      formData.append("videoUrl", videoUrl);  // Add videoUrl to formData
+      if (videoFile) {
+        formData.append("videoFile", videoFile);
+      }
   
       if (image) {
         formData.append("image", image);
       }
+  
+      // Log the contents of FormData for debugging
+      formData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+      });
   
       // Send data to the backend
       const response = await axios.post(
@@ -88,14 +110,32 @@ const NewRoboGenius = () => {
         }
       );
   
+      // Log the backend response
       console.log("Response from backend:", response.data);
       setSubmittedData(response.data); // Optionally save the response data
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting data", error);
+  
+      // Handle specific error cases
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error("Backend error:", error.response.data);
+        alert(`Error: ${error.response.data.message || "An error occurred"}`);
+      } else if (error.request) {
+        // No response was received
+        console.error("No response from backend:", error.request);
+        alert("No response from the server. Please try again later.");
+      } else {
+        // Other errors
+        console.error("Error in setting up request:", error.message);
+        alert(`Error: ${error.message}`);
+      }
     }
   };
   
   
+
+
 
   return (
     <div className="admin-container">
@@ -254,14 +294,20 @@ const NewRoboGenius = () => {
             </div>
 
             <div>
-              <label>Video URL</label>
-              <input
-                type="url"
-                placeholder="Video URL"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-              />
+              <label>Video File</label>
+              <input type="file" accept="video/*" onChange={handleVideoChange} />
+              {videoFile && (
+                <div>
+                  <p>Video Preview:</p>
+                  <video
+                    controls
+                    src={URL.createObjectURL(videoFile)}
+                    style={{ maxWidth: "200px", marginTop: "10px" }}
+                  />
+                </div>
+              )}
             </div>
+
 
             <button type="submit">Create Data Entry</button>
           </form>

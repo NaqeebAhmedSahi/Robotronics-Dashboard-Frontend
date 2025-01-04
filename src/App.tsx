@@ -9,6 +9,13 @@ const Customers = lazy(() => import("./pages/Customers"));
 const Products = lazy(() => import("./pages/Products"));
 const Courses = lazy(() => import("./pages/Courses"));
 const RoboGenius = lazy(() => import("./pages/RoboGenius"));
+const MyProfile = lazy(() => import("./pages/MyProfile"));
+const SignInPage = lazy(() => import("./pages/SignInPage"));
+const Users = lazy(() => import("./pages/Users"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Financial = lazy(() => import("./pages/Financial"));
+
 
 const Transactions = lazy(() => import("./pages/Transactions"));
 const ProductManagemnet = lazy(() => import("./pages/management/ProductManagemnet"));
@@ -39,8 +46,15 @@ const App = () => {
 					<Route path="/admin/transaction" element={<Transactions />} />
 					<Route path="/admin/customer" element={<Customers />} />
 					<Route path="/admin/robo_genius" element={<RoboGenius />} />
+					<Route path="/admin/myProfile" element={<MyProfile />} />
+					<Route path="/admin/SignInPage" element={<SignInPage />} />
+					<Route path="/admin/Users" element={<Users />} />
+					<Route path="/admin/Contact" element={<Contact />} />
+					<Route path="/admin/Blogs" element={<Blog />} />
+					<Route path="/admin/Financial" element={<Financial />} />
 
 					
+
 
 					{/* charts */}
 					<Route path="/admin/chart/bar" element={<BarCharts />} />

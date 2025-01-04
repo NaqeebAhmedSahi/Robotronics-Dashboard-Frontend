@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AdminSidebar from "../components/AdminSidebar";
 import { BsSearch } from "react-icons/bs";
 import { BiMaleFemale } from "react-icons/bi";
 import { FaRegBell } from "react-icons/fa";
 import { HiTrendingUp, HiTrendingDown } from "react-icons/hi";
-import userImg from "../assets/userImage.png";
+import userImg from "../assets/userImage.png"; // Placeholder image
 import data from "../assets/data.json";
 import { BarChart, DougnutChart } from "../components/Charts";
 import DashBoardTable from "../components/DashBoardTable";
+import { Avatar, Box, Typography } from "@mui/material";
 
 const Dashboard = () => {
   const [courseCount, setCourseCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [adminName, setAdminName] = useState("Admin Name");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,7 +48,12 @@ const Dashboard = () => {
           <BsSearch />
           <input type="text" placeholder="Search for data, users, docs" />
           <FaRegBell />
-          <img src={userImg} alt="user image" />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, padding: "8px 16px" }}>
+            <Avatar sx={{ bgcolor: "#3f51b5" }}>A</Avatar>
+            <Typography variant="body1" sx={{ fontWeight: "bold", fontSize: "1rem" }}>
+              {adminName}
+            </Typography>
+          </Box>
         </div>
         <section className="widget-container">
           {isLoading ? (
