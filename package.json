@@ -10,6 +10,10 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.0",
+		"@mui/icons-material": "^6.3.1",
+		"@mui/material": "^6.3.1",
 		"axios": "^1.7.8",
 		"chart.js": "^4.4.1",
 		"react": "^18.2.0",
@@ -19,15 +23,18 @@
 		"react-router-dom": "^6.21.1",
 		"react-table": "^7.8.0",
 		"react-toastify": "^10.0.6",
+		"recharts": "^2.15.0",
 		"sass": "^1.69.7",
 		"toastify": "^2.0.1",
 		"uuid": "^11.0.3"
 	},
 	"devDependencies": {
+		"@mui/x-charts": "^7.23.2",
 		"@types/node": "^22.10.2",
 		"@types/react": "^18.2.43",
 		"@types/react-dom": "^18.2.17",
 		"@types/react-table": "^7.7.19",
+		"@types/recharts": "^1.8.29",
 		"@typescript-eslint/eslint-plugin": "^6.14.0",
 		"@typescript-eslint/parser": "^6.14.0",
 		"@vitejs/plugin-react-swc": "^3.5.0",
