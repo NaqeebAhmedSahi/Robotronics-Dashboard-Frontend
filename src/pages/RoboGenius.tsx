@@ -15,8 +15,9 @@ interface DataType {
   category: string;
   whatYouLearn: string;
   targetAudience: string;
-  image: string; 
-  features: string; 
+  image: string;
+  video: string;
+  features: string;
   rating: number;
   createdAt: string;
   action: ReactElement;
@@ -32,6 +33,16 @@ const columns: Column<DataType>[] = [
         alt="RoboGenius"
         style={{ width: "50px", height: "50px", objectFit: "cover" }}
       />
+    ),
+  },
+  {
+    Header: "Video",
+    accessor: "video",
+    Cell: ({ value }) => (
+      <video width="200px" controls>
+        <source src={value} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     ),
   },
   {
@@ -90,8 +101,10 @@ const RoboGenius = () => {
 
       console.log("Fetched data:", response.data);
 
-      const formattedData = response.data.map((item: any) => {
-        const imageUrl = item.image?.url || "http://localhost:8080/default-image.jpg";
+      const formattedData = response.data.data.map((item: any) => {
+        const imageUrl = `http://localhost:8080${item.image?.url}`;
+        const videoUrl = `http://localhost:8080${item.video?.url}`;
+        const createdAt = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "N/A";
 
         return {
           title: item.title,
@@ -104,7 +117,8 @@ const RoboGenius = () => {
           features: item.features,
           rating: item.rating,
           image: imageUrl,
-          createdAt: new Date(item.createdAt).toLocaleDateString(),
+          video: videoUrl,
+          createdAt: createdAt,
           action: (
             <div className="action-buttons">
               <button
