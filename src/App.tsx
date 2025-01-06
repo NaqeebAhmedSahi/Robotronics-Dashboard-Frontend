@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Loader from "./components/Loader";
+import Header from "./components/Header";
+
 
 // ** pages lazy import
 const HomePage = lazy(() => import("./pages/Home"));
@@ -15,6 +17,12 @@ const Users = lazy(() => import("./pages/Users"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Blog = lazy(() => import("./pages/Blog"));
 const Financial = lazy(() => import("./pages/Financial"));
+const RoboSchool = lazy(() => import("./pages/RoboSchool"));
+const JobApplications = lazy(() => import("./pages/JobApplication"));
+const VideoGallery = lazy(() => import("./pages/VideoGallery"));
+
+
+
 
 
 const Transactions = lazy(() => import("./pages/Transactions"));
@@ -22,7 +30,10 @@ const ProductManagemnet = lazy(() => import("./pages/management/ProductManagemne
 const TransactionManagement = lazy(() => import("./pages/management/TransactionManagement"));
 const NewProduct = lazy(() => import("./pages/management/NewProduct"));
 const NewCourses = lazy(() => import("./pages/management/NewCourses"));
+const NewVideoGallery = lazy(() => import("./pages/management/NewVideoGallery"));
+
 const NewRoboGenius = lazy(() => import("./pages/management/NewRoboGenius"));
+
 
 const CoursesManagemnet = lazy(() => import("./pages/management/CoursesManagement"));
 const BarCharts = lazy(() => import("./pages/charts/BarCharts"));
@@ -36,9 +47,12 @@ const StopWatch = lazy(() => import("./pages/apps/StopWatch"));
 
 const App = () => {
 	return (
+
 		<BrowserRouter>
+			<Header/>
 			<Suspense fallback={<Loader />}>
 				<Routes>
+
 					<Route path="/" element={<HomePage />} />
 					<Route path="/admin/dashboard" element={<Dashboard />} />
 					<Route path="/admin/product" element={<Products />} />
@@ -52,10 +66,12 @@ const App = () => {
 					<Route path="/admin/Contact" element={<Contact />} />
 					<Route path="/admin/Blogs" element={<Blog />} />
 					<Route path="/admin/Financial" element={<Financial />} />
+					<Route path="/admin/Robo_school" element={<RoboSchool />} />
+					<Route path="/admin/JobApplications" element={<JobApplications />} />
+					<Route path="/admin/VideoGallery" element={<VideoGallery />} />
+
 
 					
-
-
 					{/* charts */}
 					<Route path="/admin/chart/bar" element={<BarCharts />} />
 					<Route path="/admin/chart/pie" element={<PieCharts />} />
@@ -69,6 +85,9 @@ const App = () => {
 					{/* management */}
 					<Route path="/admin/product/new" element={<NewProduct />} />
 					<Route path="/admin/robo_genius/new" element={<NewRoboGenius />} />
+					<Route path="/admin/NewVideoGallery/new" element={<NewVideoGallery />} />
+
+				
 
 					<Route path="/admin/product/:id" element={<ProductManagemnet />} />
 					<Route path="/admin/course/new" element={<NewCourses />} />

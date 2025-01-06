@@ -1,172 +1,108 @@
-import React, { useState } from "react";
-import {
-  Typography,
-  Button,
-  TextField,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Modal,
-} from "@mui/material";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { ReactElement, useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
-import { FaTrashAlt, FaReply } from "react-icons/fa";
+import { Column } from "react-table";
+import TableHOC from "../components/TableHOC";
+import { FaTrash } from "react-icons/fa";
 
-interface Customer {
-  id: number;
+interface Contact {
+  _id: string;
   name: string;
+  phone: string;
   email: string;
+  schoolName?: string;
+  address?: string;
   message: string;
+  createdAt: string;
 }
 
-const ContactPage: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>([
-    { id: 1, name: "John Doe", email: "john@example.com", message: "Need help with my order." },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", message: "Inquiry about a product." },
-  ]);
+interface DataType {
+  name: string;
+  email: string;
+  phone: string;
+  schoolName: string;
+  address: string;
+  message: string;
+  createdAt: string;
+  action: ReactElement;
+}
 
-  const [responseMessage, setResponseMessage] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+const columns: Column<DataType>[] = [
+  { Header: "Name", accessor: "name" },
+  { Header: "Email", accessor: "email" },
+  { Header: "Phone", accessor: "phone" },
+  { Header: "School Name", accessor: "schoolName" },
+  { Header: "Address", accessor: "address" },
+  { Header: "Message", accessor: "message" },
+  { Header: "Created At", accessor: "createdAt" },
+  { Header: "Action", accessor: "action" },
+];
 
-  const handleDeleteCustomer = (id: number) => {
-    const updatedCustomers = customers.filter((customer) => customer.id !== id);
-    setCustomers(updatedCustomers);
+const ContactPage = () => {
+  const [data, setData] = useState<DataType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/contact/getAllContact");
+        if (!response.ok) {
+          throw new Error("Failed to fetch contacts");
+        }
+        const result = await response.json();
+        console.log(result.data);
+        
+        // Assuming the API response structure
+        const contacts: Contact[] = Array.isArray(result.data) ? result.data : [];
+
+        const formattedData = contacts.map((contact) => ({
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          schoolName: contact.schoolName || "N/A",
+          address: contact.address || "N/A",
+          message: contact.message,
+          createdAt: new Date(contact.createdAt).toLocaleString(),
+          action: (
+            <FaTrash
+              style={{ cursor: "pointer", color: "red" }}
+              onClick={() => handleDelete(contact._id)}
+            />
+          ),
+        }));
+
+        setData(formattedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
+
+  const handleDelete = (id: string) => {
+    console.log(`Delete contact with ID: ${id}`);
+    // Implement delete logic here
   };
 
-  const handleRespondCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setModalOpen(true);
-  };
+  const TableComponent = TableHOC<DataType>(
+    columns,
+    data,
+    "dashboard-product-box",
+    "Contact Information",
+    true
+  );
 
-  const handleSendResponse = () => {
-    if (selectedCustomer) {
-      console.log(`Response to ${selectedCustomer.email}: ${responseMessage}`);
-      // Here you can add logic to send the response message, such as making an API call.
-      setModalOpen(false);
-      setResponseMessage("");
-    }
-  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="admin-container" >
-      {/* Sidebar */}
+    <div className="admin-container">
       <AdminSidebar />
-
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: "20px", background: "#f5f5f5" }}>
-        <Typography
-          variant="h4"
-          align="center"
-          gutterBottom
-          style={{ marginBottom: "20px", color: "#333" }}
-        >
-          Customer Contacts
-        </Typography>
-
-        {/* Customers Table */}
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow style={{ background: "#1976d2" }}>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Name
-                </TableCell>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Email
-                </TableCell>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Message
-                </TableCell>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {customers.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell align="center">{customer.name}</TableCell>
-                  <TableCell align="center">{customer.email}</TableCell>
-                  <TableCell align="center">{customer.message}</TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleRespondCustomer(customer)}
-                    >
-                      <FaReply />
-                    </IconButton>
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleDeleteCustomer(customer.id)}
-                    >
-                      <FaTrashAlt />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-
-      {/* Respond Modal */}
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        aria-labelledby="respond-modal"
-        aria-describedby="respond-message-form"
-      >
-        <Paper
-          style={{
-            width: "500px",
-            margin: "100px auto",
-            padding: "20px",
-            position: "relative",
-            borderRadius: "10px",
-          }}
-        >
-          <Typography
-            id="respond-modal"
-            variant="h6"
-            align="center"
-            style={{ marginBottom: "20px", color: "#333" }}
-          >
-            Respond to {selectedCustomer?.name}
-          </Typography>
-          <TextField
-            label="Response Message"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={6}
-            style={{
-              background: "#f9f9f9",
-              borderRadius: "8px",
-              marginBottom: "20px",
-            }}
-            value={responseMessage}
-            onChange={(e) => setResponseMessage(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleSendResponse}
-            style={{
-              padding: "10px 0",
-              background: "#1976d2",
-              fontSize: "16px",
-            }}
-          >
-            Send Response
-          </Button>
-        </Paper>
-      </Modal>
+      <TableComponent />
     </div>
   );
 };
