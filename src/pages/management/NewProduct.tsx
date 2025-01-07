@@ -15,7 +15,13 @@ const NewProduct = () => {
 
   const [submittedData, setSubmittedData] = useState<any>(null);
 
-  const categories = ["Educational Toy", "Curriculum Box", "Ardeno", "Lego Robot", "Others"];
+  const categories = [
+    "Lego Robots",
+   "Curriculum Books",
+    "Arduino",
+    "Educational Toys",
+     "Others",
+  ];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,11 +67,15 @@ const NewProduct = () => {
         formData.append("image", image); // Append the file
       }
 
-      const response = await axios.post("http://localhost:8080/addProduct", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8080/addProduct",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       // Handle the response from the backend
       console.log(response.data);
@@ -86,11 +96,19 @@ const NewProduct = () => {
             {/* Main Photo */}
             <div>
               <label>Product Image</label>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
               {preview && (
                 <div>
                   <p>Image Preview:</p>
-                  <img src={preview} alt="Product Preview" style={{ maxWidth: "200px", marginTop: "10px" }} />
+                  <img
+                    src={preview}
+                    alt="Product Preview"
+                    style={{ maxWidth: "200px", marginTop: "10px" }}
+                  />
                 </div>
               )}
             </div>

@@ -12,7 +12,12 @@ interface DataType {
   description: string;
   stock: number;
   price: number;
-  category: "Educational Toy" | "Curriculum Box"| "Ardeno"| "Lego Robot"| "Others" ;
+  category:
+    | "Lego Robots"
+    | "Curriculum Books"
+    | "Arduino"
+    | "Educational Toys"
+    | "Others";
   // const categories = ["Educational Toy", "Curriculum Box", "Ardeno", "Lego Robot", "Others"];
   brand: string;
   image: string; // Added image field
@@ -69,7 +74,7 @@ const columns: Column<DataType>[] = [
   {
     Header: "Action",
     accessor: "action",
-  }
+  },
 ];
 
 const Products = () => {
@@ -79,17 +84,18 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get("http://localhost:8080/getProducts");
-  
+
       // Log the fetched data
       console.log("Fetched courses data:", response.data);
-  
+
       const fetchProducts = response.data.map((products: any) => {
         // Handle cases where image is null or has the object format
-        const imageUrl = products.image?.url || "http://localhost:8080/default-image.jpg";
-  
+        const imageUrl =
+          products.image?.url || "http://localhost:8080/default-image.jpg";
+
         // Log each processed image URL
         console.log("Processed Course Image URL:", imageUrl);
-  
+
         return {
           name: products.name,
           description: products.description,
@@ -101,7 +107,7 @@ const Products = () => {
           averageRating: products.averageRating,
           // numOfReviews: products.numOfReviews,
           createdAt: products.createdAt,
-         // Ensure a valid image URL
+          // Ensure a valid image URL
           action: (
             <div className="action-buttons">
               <button
@@ -124,14 +130,12 @@ const Products = () => {
           ),
         };
       });
-  
-    setData(fetchProducts);
+
+      setData(fetchProducts);
     } catch (error) {
       console.error("Error fetching Products:", error);
     }
   };
-  
-  
 
   useEffect(() => {
     fetchProducts();
@@ -150,7 +154,16 @@ const Products = () => {
     }
   };
 
-  const Table = useCallback(TableHOC<DataType>(columns, data, "dashboard-product-box", "Products", true), [data]);
+  const Table = useCallback(
+    TableHOC<DataType>(
+      columns,
+      data,
+      "dashboard-product-box",
+      "Products",
+      true
+    ),
+    [data]
+  );
 
   return (
     <div className="admin-container">
