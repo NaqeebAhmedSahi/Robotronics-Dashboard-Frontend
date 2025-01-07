@@ -64,7 +64,7 @@ const AdminSidebar = () => {
       path: '/admin/robo_genius',
       children: [
         { itemId: 'roboGenParent', label: 'RoboGenius Parent', icon: <FaUsers />, path: '/admin/robo_genius' },
-        { itemId: 'roboGenSchool', label: 'RoboGenius School', icon: <FaUsers />, path: '/admin/roboSchool' },
+        { itemId: 'roboGenSchool', label: 'RoboGenius School', icon: <FaUsers />, path: '/admin/robo_School' },
       ],
     },
     {
