@@ -12,7 +12,8 @@ interface DataType {
   description: string;
   stock: number;
   price: number;
-  category: "course" | "product";
+  category: "Educational Toy" | "Curriculum Box"| "Ardeno"| "Lego Robot"| "Others" ;
+  // const categories = ["Educational Toy", "Curriculum Box", "Ardeno", "Lego Robot", "Others"];
   brand: string;
   image: string; // Added image field
   averageRating: number;

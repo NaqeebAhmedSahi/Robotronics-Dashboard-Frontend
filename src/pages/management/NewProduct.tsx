@@ -15,7 +15,7 @@ const NewProduct = () => {
 
   const [submittedData, setSubmittedData] = useState<any>(null);
 
-  const categories = ["Electronics", "Home Appliances", "Clothing", "Books", "Toys"];
+  const categories = ["Educational Toy", "Curriculum Box", "Ardeno", "Lego Robot", "Others"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
