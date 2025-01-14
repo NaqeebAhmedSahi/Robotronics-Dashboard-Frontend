@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useEffect, useState } from "react";
+import React, { ReactElement, useCallback, useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import TableHOC from "../components/TableHOC";
 import { Column } from "react-table";
@@ -7,69 +7,169 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
-interface DataType {
+interface Content {
+  id: string;
+  type: string;
   name: string;
+  file: string;
+}
+
+interface Module {
+  id: string;
+  name: string;
+  contents: Content[];
+}
+
+interface Section {
+  id: string;
+  name: string;
+  modules: Module[];
+}
+
+interface DataType {
+  title: string;
   description: string;
-  stock: number;
-  price: number;
-  category:
-    | "Lego Robots"
-    | "Curriculum Books"
-    | "Arduino"
-    | "Educational Toys"
-    | "Others";
-  // const categories = ["Educational Toy", "Curriculum Box", "Ardeno", "Lego Robot", "Others"];
-  brand: string;
-  image: string; // Added image field
-  averageRating: number;
-  numOfReviews: number;
-  createdAt: string;
+  category: string;
+  reviews: number;
+  date: string;
+  studentsDownloaded: number;
+  freeTrial: boolean;
+  features: string[];
+  whatYouLearn: string[];
+  options: string[];
+  thumbnail: string;
+  banner: string;
+  video: string;
+  sections: Section[];
   action: ReactElement;
 }
 
 const columns: Column<DataType>[] = [
   {
-    Header: "Image",
-    accessor: "image",
-    Cell: ({ value }) => (
-      <img
-        src={value}
-        alt="Course"
-        style={{ width: "50px", height: "50px", objectFit: "cover" }}
-      />
-    ), // Displaying the image
-  },
-  {
-    Header: "name",
-    accessor: "name",
-  },
-  {
-    Header: "Description",
-    accessor: "description",
-  },
-  {
-    Header: "stock",
-    accessor: "stock",
-  },
-  {
-    Header: "Price",
-    accessor: "price",
+    Header: "Title",
+    accessor: "title",
+    Cell: ({ value }) => <strong>{value}</strong>,
   },
   {
     Header: "Category",
     accessor: "category",
   },
   {
-    Header: "brand",
-    accessor: "brand",
+    Header: "Reviews",
+    accessor: "reviews",
   },
   {
-    Header: "averageRating",
-    accessor: "averageRating",
+    Header: "Students",
+    accessor: "studentsDownloaded",
   },
   {
-    Header: "createdAt",
-    accessor: "createdAt",
+    Header: "Free Trial",
+    accessor: "freeTrial",
+    Cell: ({ value }) => (value ? "Yes" : "No"),
+  },
+  {
+    Header: "Features",
+    accessor: "features",
+    Cell: ({ value }) => (
+      <ul>
+        {value.map((feature: string, index: number) => (
+          <li key={index}>{feature}</li>
+        ))}
+      </ul>
+    ),
+  },
+  {
+    Header: "Thumbnail",
+    accessor: "thumbnail",
+    Cell: ({ value }) => (
+      <img
+        src={`http://localhost:8080/${value}`}
+        alt="Thumbnail"
+        style={{
+          maxWidth: "100px",
+          maxHeight: "100px",
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          padding: "5px",
+        }}
+      />
+    ),
+  },
+  {
+    Header: "Banner",
+    accessor: "banner",
+    Cell: ({ value }) => (
+      <img
+        src={`http://localhost:8080/${value}`}
+        alt="Banner"
+        style={{
+          maxWidth: "150px",
+          maxHeight: "100px",
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          padding: "5px",
+        }}
+      />
+    ),
+  },
+  {
+    Header: "Video",
+    accessor: "video",
+    Cell: ({ value }) => (
+      <video
+        controls
+        style={{
+          maxWidth: "150px",
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+        }}
+      >
+        <source src={`http://localhost:8080/${value}`} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    ),
+  },
+  {
+    Header: "Sections",
+    accessor: "sections",
+    Cell: ({ value }) => (
+      <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+        {value.map((section: Section) => (
+          <div key={section.id} style={{ marginBottom: "10px" }}>
+            <strong>{section.name}</strong>
+            <ul style={{ marginLeft: "20px", listStyleType: "circle" }}>
+              {section.modules.map((module) => (
+                <li key={module.id}>
+                  <strong>{module.name}</strong>
+                  <ul style={{ marginLeft: "20px", listStyleType: "disc" }}>
+                    {module.contents.map((content) => (
+                      <li key={content.id}>
+                        {content.name} - {content.type} -{" "}
+                        <a
+                          href={
+                            content.file.startsWith("http")
+                              ? content.file
+                              : `http://localhost:8080${content.file}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: "#007bff",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          View File
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    ),
   },
   {
     Header: "Action",
@@ -77,103 +177,111 @@ const columns: Column<DataType>[] = [
   },
 ];
 
-const Products = () => {
+const Courses = () => {
   const [data, setData] = useState<DataType[]>([]);
   const navigate = useNavigate();
 
-  const fetchProducts = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:8080/getProducts");
-
-      // Log the fetched data
+      const response = await axios.get("http://localhost:8080/get-courses");
       console.log("Fetched courses data:", response.data);
 
-      const fetchProducts = response.data.map((products: any) => {
-        // Handle cases where image is null or has the object format
-        const imageUrl =
-          products.image?.url || "http://localhost:8080/default-image.jpg";
+      const courses = Array.isArray(response.data)
+        ? response.data
+        : response.data?.courses || [];
 
-        // Log each processed image URL
-        console.log("Processed Course Image URL:", imageUrl);
+      const formattedCourses = courses.map((course: any) => ({
+        title: course.title,
+        description: course.description,
+        category: course.category,
+        reviews: course.reviews,
+        date: course.date || "",
+        studentsDownloaded: course.studentsDownloaded,
+        freeTrial: course.freeTrial,
+        features: course.features || [],
+        whatYouLearn: course.whatYouLearn || [],
+        options: course.options || [],
+        sections: course.sections || [],
+        thumbnail: course.thumbnail || "",
+        banner: course.banner || "",
+        video: course.video || "",
+        action: (
+          <div className="action-buttons">
+            <button
+              onClick={() =>
+                navigate(`/admin/course/${course._id}`, {
+                  state: { course },
+                })
+              }
+              className="update-button"
+              style={{
+                backgroundColor: "#ffc107",
+                border: "none",
+                color: "#fff",
+                padding: "5px 10px",
+                marginRight: "5px",
+                borderRadius: "4px",
+              }}
+            >
+              <FaEdit />
+            </button>
+            <button
+              onClick={() => handleDelete(course._id)}
+              className="delete-button"
+              style={{
+                backgroundColor: "#dc3545",
+                border: "none",
+                color: "#fff",
+                padding: "5px 10px",
+                borderRadius: "4px",
+              }}
+            >
+              <FaTrashAlt />
+            </button>
+          </div>
+        ),
+      }));
 
-        return {
-          name: products.name,
-          description: products.description,
-          stock: products.stock,
-          price: products.price,
-          category: products.category,
-          brand: products.brand,
-          image: imageUrl,
-          averageRating: products.averageRating,
-          // numOfReviews: products.numOfReviews,
-          createdAt: products.createdAt,
-          // Ensure a valid image URL
-          action: (
-            <div className="action-buttons">
-              <button
-                onClick={() =>
-                  navigate(`/admin/product/${products._id}`, {
-                    state: { products: products },
-                  })
-                }
-                className="update-button"
-              >
-                <FaEdit />
-              </button>
-              <button
-                onClick={() => handleDelete(products._id)}
-                className="delete-button"
-              >
-                <FaTrashAlt />
-              </button>
-            </div>
-          ),
-        };
-      });
-
-      setData(fetchProducts);
+      setData(formattedCourses);
     } catch (error) {
-      console.error("Error fetching Products:", error);
+      console.error("Error fetching courses:", error);
     }
-  };
-
-  useEffect(() => {
-    fetchProducts();
   }, [navigate]);
 
-  const handleDelete = async (productId: string) => {
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  const handleDelete = async (courseId: string) => {
     try {
       const response = await axios.delete(
-        `http://localhost:8080/deleteProduct/${productId}`
+        `http://localhost:8080/coursesById/${courseId}`
       );
       alert(response.data.message);
-      fetchProducts();
+      fetchCourses();
     } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("Failed to delete product. Please try again.");
+      console.error("Error deleting course:", error);
+      alert("Failed to delete course. Please try again.");
     }
   };
 
   const Table = useCallback(
-    TableHOC<DataType>(
-      columns,
-      data,
-      "dashboard-product-box",
-      "Products",
-      true
-    ),
+    TableHOC<DataType>(columns, data, "dashboard-product-box", "Courses", true),
     [data]
   );
 
   return (
     <div className="admin-container">
       <AdminSidebar />
-      <main className="products">{Table()}</main>
-      <Link to="/admin/product/new" className="create-product-btn">
+      <main className="products">
+        <h1 style={{ textAlign: "center", margin: "20px 0" }}>Courses</h1>
+        {Table()}
+      </main>
+      <Link to="/admin/course/new" className="create-product-btn">
         <FaPlus />
       </Link>
     </div>
   );
 };
 
-export default Products;
+export default Courses;
