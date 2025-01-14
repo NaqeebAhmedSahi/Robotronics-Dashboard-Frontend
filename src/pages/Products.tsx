@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useState } from "react";
+import { ReactElement, useCallback, useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import TableHOC from "../components/TableHOC";
 import { Column } from "react-table";
@@ -6,66 +6,93 @@ import { FaPlus, FaTrashAlt, FaEdit } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-
-interface Content {
-  id: string;
-  type: string;
-  name: string;
-  file: string;
-}
-
-interface Module {
-  id: string;
-  name: string;
-  contents: Content[];
-}
-
-interface Section {
-  id: string;
-  name: string;
-  modules: Module[];
-}
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface DataType {
-  title: string;
+  name: string;
   description: string;
+  price: number;
   category: string;
-  reviews: number;
-  date: string;
-  studentsDownloaded: number;
-  freeTrial: boolean;
+  stock: number;
+  brand: string;
+  ratings: number;
+  productSold: number;
+  productWatched: number;
+  onSale: boolean;
+  detailsDescription: string;
   features: string[];
-  whatYouLearn: string[];
-  options: string[];
-  thumbnail: string;
-  banner: string;
-  video: string;
-  sections: Section[];
+  images: string[];
+  createdAt: string;
   action: ReactElement;
 }
 
 const columns: Column<DataType>[] = [
   {
-    Header: "Title",
-    accessor: "title",
-    Cell: ({ value }) => <strong>{value}</strong>,
+    Header: "Image",
+    accessor: "images",
+    Cell: ({ value }) => (
+      <div style={{ display: "flex", gap: "5px" }}>
+        {value.slice(0, 10).map((img: string, index: number) => (
+          <img
+            key={index}
+            src={`http://localhost:8080/${img}`}
+            alt="Product"
+            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+          />
+        ))}
+      </div>
+    ), // Displaying multiple images
+  },
+  {
+    Header: "Name",
+    accessor: "name",
+  },
+  {
+    Header: "Description",
+    accessor: "description",
+    Cell: ({ value }) => (
+      <div title={value} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "150px" }}>
+        {value}
+      </div>
+    ),
+  },
+  {
+    Header: "Stock",
+    accessor: "stock",
+  },
+  {
+    Header: "Price",
+    accessor: "price",
   },
   {
     Header: "Category",
     accessor: "category",
   },
   {
-    Header: "Reviews",
-    accessor: "reviews",
+    Header: "Brand",
+    accessor: "brand",
   },
   {
-    Header: "Students",
-    accessor: "studentsDownloaded",
+    Header: "Ratings",
+    accessor: "ratings",
   },
   {
-    Header: "Free Trial",
-    accessor: "freeTrial",
+    Header: "Product Sold",
+    accessor: "productSold",
+  },
+  {
+    Header: "Product Watched",
+    accessor: "productWatched",
+  },
+  {
+    Header: "On Sale",
+    accessor: "onSale",
     Cell: ({ value }) => (value ? "Yes" : "No"),
+  },
+  {
+    Header: "Details Description",
+    accessor: "detailsDescription",
   },
   {
     Header: "Features",
@@ -79,97 +106,9 @@ const columns: Column<DataType>[] = [
     ),
   },
   {
-    Header: "Thumbnail",
-    accessor: "thumbnail",
-    Cell: ({ value }) => (
-      <img
-        src={`http://localhost:8080/${value}`}
-        alt="Thumbnail"
-        style={{
-          maxWidth: "100px",
-          maxHeight: "100px",
-          border: "1px solid #ddd",
-          borderRadius: "4px",
-          padding: "5px",
-        }}
-      />
-    ),
-  },
-  {
-    Header: "Banner",
-    accessor: "banner",
-    Cell: ({ value }) => (
-      <img
-        src={`http://localhost:8080/${value}`}
-        alt="Banner"
-        style={{
-          maxWidth: "150px",
-          maxHeight: "100px",
-          border: "1px solid #ddd",
-          borderRadius: "4px",
-          padding: "5px",
-        }}
-      />
-    ),
-  },
-  {
-    Header: "Video",
-    accessor: "video",
-    Cell: ({ value }) => (
-      <video
-        controls
-        style={{
-          maxWidth: "150px",
-          border: "1px solid #ddd",
-          borderRadius: "4px",
-        }}
-      >
-        <source src={`http://localhost:8080/${value}`} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    ),
-  },
-  {
-    Header: "Sections",
-    accessor: "sections",
-    Cell: ({ value }) => (
-      <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-        {value.map((section: Section) => (
-          <div key={section.id} style={{ marginBottom: "10px" }}>
-            <strong>{section.name}</strong>
-            <ul style={{ marginLeft: "20px", listStyleType: "circle" }}>
-              {section.modules.map((module) => (
-                <li key={module.id}>
-                  <strong>{module.name}</strong>
-                  <ul style={{ marginLeft: "20px", listStyleType: "disc" }}>
-                    {module.contents.map((content) => (
-                      <li key={content.id}>
-                        {content.name} - {content.type} -{" "}
-                        <a
-                          href={
-                            content.file.startsWith("http")
-                              ? content.file
-                              : `http://localhost:8080${content.file}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: "#007bff",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          View File
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    ),
+    Header: "Created At",
+    accessor: "createdAt",
+    Cell: ({ value }) => new Date(value).toLocaleString(),
   },
   {
     Header: "Action",
@@ -177,111 +116,113 @@ const columns: Column<DataType>[] = [
   },
 ];
 
-const Courses = () => {
+const Products = () => {
   const [data, setData] = useState<DataType[]>([]);
   const navigate = useNavigate();
 
-  const fetchCourses = useCallback(async () => {
+  const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/get-courses");
-      console.log("Fetched courses data:", response.data);
+      const response = await axios.get("http://localhost:8080/getProducts");
+      const products = response.data.products;
 
-      const courses = Array.isArray(response.data)
-        ? response.data
-        : response.data?.courses || [];
-
-      const formattedCourses = courses.map((course: any) => ({
-        title: course.title,
-        description: course.description,
-        category: course.category,
-        reviews: course.reviews,
-        date: course.date || "",
-        studentsDownloaded: course.studentsDownloaded,
-        freeTrial: course.freeTrial,
-        features: course.features || [],
-        whatYouLearn: course.whatYouLearn || [],
-        options: course.options || [],
-        sections: course.sections || [],
-        thumbnail: course.thumbnail || "",
-        banner: course.banner || "",
-        video: course.video || "",
+      const formattedProducts = products.map((product: any) => ({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+        stock: product.stock,
+        brand: product.brand,
+        ratings: product.ratings,
+        productSold: product.productSold,
+        productWatched: product.productWatched,
+        onSale: product.onSale,
+        detailsDescription: product.detailsDescription,
+        features: product.features,
+        images: product.images,
+        createdAt: product.createdAt,
         action: (
           <div className="action-buttons">
             <button
               onClick={() =>
-                navigate(`/admin/course/${course._id}`, {
-                  state: { course },
+                navigate(`/admin/product/${product._id}`, {
+                  state: { product },
                 })
               }
               className="update-button"
               style={{
-                backgroundColor: "#ffc107",
+                backgroundColor: "transparent",
                 border: "none",
-                color: "#fff",
-                padding: "5px 10px",
-                marginRight: "5px",
-                borderRadius: "4px",
+                cursor: "pointer",
               }}
+
             >
-              <FaEdit />
+              <EditIcon
+                style={{
+                  color: "blue",
+                  transition: "transform 0.3s ease",
+                }}
+                className="hover-grow"
+              />
             </button>
             <button
-              onClick={() => handleDelete(course._id)}
+              onClick={() => handleDelete(product._id)}
               className="delete-button"
               style={{
-                backgroundColor: "#dc3545",
+                backgroundColor: "transparent",
                 border: "none",
-                color: "#fff",
-                padding: "5px 10px",
-                borderRadius: "4px",
+                cursor: "pointer",
               }}
             >
-              <FaTrashAlt />
+              <DeleteIcon
+                style={{
+                  color: "red",
+                  transition: "transform 0.3s ease",
+                  
+                }}
+                className="hover-grow"
+              />
             </button>
           </div>
         ),
       }));
 
-      setData(formattedCourses);
+      setData(formattedProducts);
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      console.error("Error fetching Products:", error);
     }
-  }, [navigate]);
+  };
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    fetchProducts();
+  }, [navigate]);
 
-  const handleDelete = async (courseId: string) => {
+  const handleDelete = async (productId: string) => {
     try {
       const response = await axios.delete(
-        `http://localhost:8080/coursesById/${courseId}`
+        `http://localhost:8080/deleteProduct/${productId}`
       );
       alert(response.data.message);
-      fetchCourses();
+      fetchProducts();
     } catch (error) {
-      console.error("Error deleting course:", error);
-      alert("Failed to delete course. Please try again.");
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product. Please try again.");
     }
   };
 
   const Table = useCallback(
-    TableHOC<DataType>(columns, data, "dashboard-product-box", "Courses", true),
+    TableHOC<DataType>(columns, data, "dashboard-product-box", "Products", true),
     [data]
   );
 
   return (
     <div className="admin-container">
       <AdminSidebar />
-      <main className="products">
-        <h1 style={{ textAlign: "center", margin: "20px 0" }}>Courses</h1>
-        {Table()}
-      </main>
-      <Link to="/admin/course/new" className="create-product-btn">
+      <main className="products">{Table()}</main>
+      <Link to="/admin/product/new" className="create-product-btn">
         <FaPlus />
       </Link>
     </div>
   );
 };
 
-export default Courses;
+export default Products;
