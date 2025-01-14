@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
-import { FaChartBar, FaChartLine, FaChartPie, FaGamepad, FaStopwatch, FaStar, FaUsers, FaUser, FaBlog, FaMoneyBillWave } from 'react-icons/fa';
+import { FaChartBar, FaChartLine, FaChartPie, FaGamepad, FaStopwatch, FaStar, FaUsers, FaUser, FaBlog, FaMoneyBillWave, FaFileAlt , FaUserTie , FaRegPlayCircle  } from 'react-icons/fa';
 import { MdContactMail } from 'react-icons/md'; 
 import { HiMenuAlt4, HiOutlineDocumentText } from 'react-icons/hi';
 import { IoIosPeople } from 'react-icons/io';
@@ -126,21 +126,21 @@ const AdminSidebar = () => {
     {
       itemId: 'reports',
       label: 'Reports',
-      icon: <HiOutlineDocumentText />,
+      icon: <FaFileAlt  />,
       path: '/reports',
       children: [],
     },
 	{
 		itemId: 'JobApplication',
 		label: 'Job Application',
-		icon: <HiOutlineDocumentText />,
+		icon: <FaUserTie  />,
 		path: '/admin/JobApplications',
 		children: [],
 	  },
 	  {
 		itemId: 'VideoGallery',
 		label: 'Video Gallery',
-		icon: <HiOutlineDocumentText />,
+		icon: <FaRegPlayCircle  />,
 		path: '/admin/VideoGallery',
 		children: [],
 	  },

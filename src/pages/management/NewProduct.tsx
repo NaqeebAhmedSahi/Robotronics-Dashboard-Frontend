@@ -1,212 +1,293 @@
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
+import {
+  TextField,
+  Button,
+  Switch,
+  FormControlLabel,
+  Box,
+  Typography,
+  Grid,
+  InputAdornment,
+  Paper,
+  IconButton,
+  MenuItem,
+} from "@mui/material";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import DeleteIcon from "@mui/icons-material/Delete";
 import AdminSidebar from "../../components/AdminSidebar";
 import axios from "axios";
+import { toast } from "react-toastify";  // Import toast
+import 'react-toastify/dist/ReactToastify.css';  // Import Toastify styles
+import { ToastContainer } from 'react-toastify';
 
 const NewProduct = () => {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [price, setPrice] = useState<number>();
+  const [price, setPrice] = useState<number | undefined>();
   const [category, setCategory] = useState<string>("");
-  const [stock, setStock] = useState<number>();
+  const [stock, setStock] = useState<number | undefined>();
   const [brand, setBrand] = useState<string>("");
-  const [image, setImage] = useState<File | null>(null); // Add state for image
-  const [preview, setPreview] = useState<string | null>(null);
-  const [ratings, setRatings] = useState<number>();
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [ratings, setRatings] = useState<number | undefined>();
+  const [productSold, setProductSold] = useState<number | undefined>();
+  const [productWatched, setProductWatched] = useState<number | undefined>();
+  const [onSale, setOnSale] = useState<boolean>(false);
+  const [detailsDescription, setDetailsDescription] = useState<string>("");
+  const [features, setFeatures] = useState<string[]>([""]);
 
-  const [submittedData, setSubmittedData] = useState<any>(null);
+  const categories = [
+    "Educational Toys",
+    "Curriculum Books",
+    "Arduino Robots",
+    "Lego Robots",
+    "Others",
+  ];
 
-  const categories = ["Educational Toy", "Curriculum Box", "Ardeno", "Lego Robot", "Others"];
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImage(file);
+      const updatedImages = [...images];
+      updatedImages[index] = file;
+      setImages(updatedImages);
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string);
+        const updatedPreviews = [...previews];
+        updatedPreviews[index] = reader.result as string;
+        setPreviews(updatedPreviews);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const addImage = () => {
+    setImages([...images, null as unknown as File]);
+    setPreviews([...previews, ""]);
+  };
+
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+    setPreviews(previews.filter((_, i) => i !== index));
+  };
+
+  const handleFeatureChange = (value: string, index: number) => {
+    const updatedFeatures = [...features];
+    updatedFeatures[index] = value;
+    setFeatures(updatedFeatures);
+  };
+
+  const addFeature = () => {
+    setFeatures([...features, ""]);
+  };
+
+  const removeFeature = (index: number) => {
+    setFeatures(features.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Create JSON representation of form data
-    const productData = {
-      name,
-      description,
-      price,
-      category,
-      stock,
-      brand,
-      ratings,
-      images: image ? image.name : null,
-    };
-
-    // Display JSON in the console
-    console.log("Form Data as JSON:", productData);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price?.toString() || "");
+    formData.append("category", category);
+    formData.append("stock", stock?.toString() || "");
+    formData.append("brand", brand);
+    formData.append("ratings", ratings?.toString() || "");
+    formData.append("productSold", productSold?.toString() || "");
+    formData.append("productWatched", productWatched?.toString() || "");
+    formData.append("onSale", onSale ? "yes" : "no");
+    formData.append("detailsDescription", detailsDescription);
+    features.forEach((feature) => formData.append("features", feature));
+    images.forEach((image, index) => {
+      if (image) formData.append(`image${index}`, image);
+    });
 
     try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("description", description);
-      formData.append("price", price?.toString() || "");
-      formData.append("category", category);
-      formData.append("stock", stock?.toString() || "");
-      formData.append("brand", brand);
-      formData.append("ratings", ratings?.toString() || "");
-
-      if (image) {
-        formData.append("image", image); // Append the file
-      }
-
       const response = await axios.post("http://localhost:8080/addProduct", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      // Handle the response from the backend
-      console.log(response.data);
-      setSubmittedData(response.data.product);
+      toast.success("Product submitted successfully!"); // Success toast
+      console.log("Product submitted successfully:", response.data);
     } catch (error) {
-      console.error("Error submitting data", error);
+      toast.error("Error submitting product!"); // Error toast
+      console.error("Error submitting product:", error);
     }
   };
 
   return (
-    <div className="admin-container">
+    <Box display="flex">
       <AdminSidebar />
-      <main className="product-management">
-        <article>
+      <Box component="main" p={4} width="100%">
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Typography variant="h4" mb={3}>
+            New Product
+          </Typography>
           <form onSubmit={handleSubmit}>
-            <h2>New Product</h2>
-
-            {/* Main Photo */}
-            <div>
-              <label>Product Image</label>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-              {preview && (
-                <div>
-                  <p>Image Preview:</p>
-                  <img src={preview} alt="Product Preview" style={{ maxWidth: "200px", marginTop: "10px" }} />
-                </div>
-              )}
-            </div>
-
-            {/* Product Name */}
-            <div>
-              <label>Name</label>
-              <input
-                required
-                type="text"
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label>Description</label>
-              <textarea
-                required
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                style={{
-                  width: "100%",
-                  height: "150px",
-                  padding: "16px",
-                }}
-              />
-            </div>
-
-            {/* Price */}
-            <div>
-              <label>Price</label>
-              <input
-                required
-                type="number"
-                placeholder="Price"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-              />
-            </div>
-
-            {/* Category */}
-            <div>
-              <label>Category</label>
-              <select
-                className="dropdown"
-                required
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                style={{
-                  width: "100%",
-                  height: "49px",
-                  padding: "16px",
-                }}
-              >
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>
-                    {category}
-                  </option>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Short Description"
+                  required
+                  multiline
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Price"
+                  required
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(Number(e.target.value))}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Stock"
+                  required
+                  type="number"
+                  value={stock}
+                  onChange={(e) => setStock(Number(e.target.value))}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Brand"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Ratings"
+                  type="number"
+                  value={ratings}
+                  onChange={(e) => setRatings(Number(e.target.value))}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Product Sold"
+                  type="number"
+                  value={productSold}
+                  onChange={(e) => setProductSold(Number(e.target.value))}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Product Watched"
+                  type="number"
+                  value={productWatched}
+                  onChange={(e) => setProductWatched(Number(e.target.value))}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={onSale}
+                      onChange={(e) => setOnSale(e.target.checked)}
+                    />
+                  }
+                  label="On Sale"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Details Description"
+                  multiline
+                  rows={4}
+                  value={detailsDescription}
+                  onChange={(e) => setDetailsDescription(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="h6">Fits and Features</Typography>
+                {features.map((feature, index) => (
+                  <Box key={index} display="flex" alignItems="center" gap={2} mb={2}>
+                    <TextField
+                      fullWidth
+                      label={`Feature ${index + 1}`}
+                      value={feature}
+                      onChange={(e) => handleFeatureChange(e.target.value, index)}
+                    />
+                    <IconButton onClick={() => removeFeature(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
                 ))}
-              </select>
-            </div>
-
-            {/* Brand */}
-            <div>
-              <label>Brand</label>
-              <input
-                required
-                type="text"
-                placeholder="Brand"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-              />
-            </div>
-
-            {/* Stock */}
-            <div>
-              <label>Stock</label>
-              <input
-                required
-                type="number"
-                placeholder="Stock"
-                value={stock}
-                onChange={(e) => setStock(Number(e.target.value))}
-              />
-            </div>
-
-            {/* Ratings */}
-            <div>
-              <label>Ratings (1-5)</label>
-              <input
-                type="number"
-                placeholder="Ratings"
-                value={ratings}
-                onChange={(e) => setRatings(Number(e.target.value))}
-                min={1}
-                max={5}
-              />
-            </div>
-
-            <button type="submit">Create Product</button>
+                <Button onClick={addFeature}>Add Fits and Feature</Button>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="h6">Images</Typography>
+                {previews.map((preview, index) => (
+                  <Box key={index} display="flex" alignItems="center" gap={2} mb={2}>
+                    {preview && <img src={preview} alt="preview" width={100} />}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, index)}
+                    />
+                    <IconButton onClick={() => removeImage(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                ))}
+                <Button onClick={addImage}>Add Image</Button>
+              </Grid>
+              <Grid item xs={12}>
+                <Button variant="contained" color="primary" type="submit">
+                  Submit
+                </Button>
+              </Grid>
+            </Grid>
           </form>
-
-          {/* Display submitted data */}
-          {submittedData && (
-            <div>
-              <h3>Product Submitted:</h3>
-              <pre>{JSON.stringify(submittedData, null, 2)}</pre>
-            </div>
-          )}
-        </article>
-      </main>
-    </div>
+        </Paper>
+      </Box>
+      <ToastContainer />
+    </Box>
   );
 };
 
