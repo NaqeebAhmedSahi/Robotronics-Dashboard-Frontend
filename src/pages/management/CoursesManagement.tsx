@@ -1,66 +1,37 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import AdminSidebar from "../../components/AdminSidebar";
-import { v4 as uuidv4 } from "uuid"; // For generating unique IDs
 import axios from "axios";
-import { Link } from "react-router-dom";
-interface Video {
-	id: string;
-	name: string;
-	description: string;
-	link: string; // Replace File | null with string
-}
-
-interface Section {
-	id: string;
-	name: string;
-	description: string;
-	videos: Video[];
-}
-
-interface Course {
-	title: string;
-	description: string;
-	instructor: string;
-	duration: number;
-	price: number;
-	category: string;
-	level: string;
-	students: string[];
-	sections: Section[];
-}
+import { v4 as uuidv4 } from "uuid";
+import { Container, TextField, Button, Grid, Typography, Box, Card, CardContent, CardActions, Select, MenuItem, InputLabel, FormControl, IconButton, Divider } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const UpdateCourse = () => {
-
 	const { id: courseId } = useParams<{ id: string }>();
-	const [title, setTitle] = useState<string>("");
-	const [description, setDescription] = useState<string>("");
-	const [instructor, setInstructor] = useState<string>(""); // Instructor ID
-	const [duration, setDuration] = useState<number>(0);
-	const [price, setPrice] = useState<number>(0);
-	const [category, setCategory] = useState<string>("course");
-	const [level, setLevel] = useState<string>("Beginner");
-	const [students, setStudents] = useState<string[]>([]); // Array of student IDs
-	const [sections, setSections] = useState<Section[]>([]);
-	const [image, setImage] = useState<File | null>(null); // For image file
-	const [imageUrl, setImageUrl] = useState<string>(""); // For displaying image URL
 
+	const [courseData, setCourseData] = useState<any>({
+		title: "",
+		description: "",
+		category: "",
+		reviews: 0,
+		date: "",
+		studentsDownloaded: 0,
+		freeTrial: false,
+		features: [],
+		whatYouLearn: [],
+		options: [],
+		thumbnail: "",
+		banner: "",
+		video: "",
+		sections: [],
+	});
 
 	useEffect(() => {
 		const fetchCourseDetails = async () => {
 			try {
 				const response = await axios.get(`http://localhost:8080/courses/${courseId}`);
-				const courseData = response.data;
-				setTitle(courseData.data.title || "");
-				setDescription(courseData.data.description || "");
-				setInstructor(courseData.data.instructor || "");
-				setDuration(courseData.data.duration || 0);
-				setPrice(courseData.data.price || 0);
-				setCategory(courseData.data.category || "");
-				setLevel(courseData.data.level || "");
-				setStudents(courseData.data.students || []);
-				setSections(courseData.data.sections || []);
-				setImageUrl(courseData.data.image.url || ""); // Set the existing image URL
+				const { courses } = response.data;
+				setCourseData(courses);
 			} catch (error) {
 				console.error("Error fetching course details:", error);
 			}
@@ -69,424 +40,213 @@ const UpdateCourse = () => {
 		fetchCourseDetails();
 	}, [courseId]);
 
-	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		setImage(file || null); // Handle undefined case and set as null
-
-		if (file) {
-			setImageUrl(URL.createObjectURL(file)); // Set preview URL
-		} else {
-			setImageUrl(""); // Reset preview URL if no file is selected
-		}
+	const handleInputChange = (field: string, value: any) => {
+		setCourseData((prev: any) => ({
+			...prev,
+			[field]: value,
+		}));
 	};
 
+	const handleSectionChange = (index: number, key: string, value: any) => {
+		const updatedSections = [...courseData.sections];
+		updatedSections[index][key] = value;
+		setCourseData((prev: any) => ({
+			...prev,
+			sections: updatedSections,
+		}));
+	};
 
-	const handleSubmit = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-		e.preventDefault();
-	
+	const handleSubmit = async () => {
 		try {
-			console.log("Submitting form data...");
-	
-			// Prepare the formData
-			const formData = new FormData();
-			formData.append("title", title);
-			formData.append("description", description);
-			formData.append("instructor", instructor);
-			formData.append("duration", duration.toString());
-			formData.append("price", price.toString());
-			formData.append("category", category);
-			formData.append("level", level);
-			formData.append("students", JSON.stringify(students));
-			formData.append("sections", JSON.stringify(sections));
-	
-			if (image) {
-				formData.append("image", image); // Append image file to form data
-			}
-	
-			// Log formData to verify all data is appended correctly
-			formData.forEach((value, key) => {
-				console.log(`${key}:`, value);
-			});
-	
-			// Send request
-			const response = await axios.put(`http://localhost:8080/courses/${courseId}`, formData, {
-				headers: { "Content-Type": "multipart/form-data" },
-			});
-	
-			console.log("Course updated successfully:", response.data);
+			const response = await axios.put(`http://localhost:8080/courses/${courseId}`, courseData);
 			alert("Course updated successfully!");
+			console.log("Response:", response.data);
 		} catch (error) {
 			console.error("Error updating course:", error);
 			alert("Failed to update the course. Please try again.");
 		}
 	};
-	
-	
-	
-
-
-	const handleSectionChange = (index: number, field: "name" | "description", value: string) => {
-		const updatedSections = [...sections];
-		updatedSections[index][field] = value;
-		setSections(updatedSections);
-	};
-
-	const handleVideoChange = (
-		sectionIndex: number,
-		videoIndex: number,
-		field: "name" | "description" | "link",
-		value: string
-	) => {
-		const updatedSections = [...sections];
-		const updatedVideo = { ...updatedSections[sectionIndex].videos[videoIndex] };
-
-		if (field === "link") {
-			updatedVideo.link = value;
-		} else {
-			updatedVideo[field] = value;
-		}
-
-		updatedSections[sectionIndex].videos[videoIndex] = updatedVideo;
-		setSections(updatedSections);
-	};
-
-
-
-
-	const addVideoToSection = (sectionIndex: number) => {
-		const updatedSections = [...sections];
-		updatedSections[sectionIndex].videos.push({
-			id: uuidv4(),
-			name: "",
-			description: "",
-			link: "", // Initialize with an empty string
-		});
-		setSections(updatedSections);
-	};
-
-
-	const removeVideoFromSection = (sectionIndex: number, videoIndex: number) => {
-		const updatedSections = [...sections];
-		updatedSections[sectionIndex].videos.splice(videoIndex, 1);
-		setSections(updatedSections);
-	};
 
 	const addSection = () => {
-		setSections([
-			...sections,
-			{
-				id: uuidv4(),
-				name: "",
-				description: "",
-				videos: [
-					{
-						id: uuidv4(),
-						name: "",
-						description: "",
-						link: "", // Changed from file to link
-					},
-				],
-			},
-		]);
+		setCourseData((prev: any) => ({
+			...prev,
+			sections: [
+				...prev.sections,
+				{ id: uuidv4(), name: "", modules: [{ id: uuidv4(), name: "", contents: [] }] },
+			],
+		}));
 	};
 
-
 	const removeSection = (index: number) => {
-		const updatedSections = sections.filter((_, sectionIndex) => sectionIndex !== index);
-		setSections(updatedSections);
+		const updatedSections = courseData.sections.filter((_: any, i: number) => i !== index);
+		setCourseData((prev: any) => ({
+			...prev,
+			sections: updatedSections,
+		}));
 	};
 
 	return (
-		<div className="admin-container">
-			<AdminSidebar />
-			<main className="product-management">
-				<article>
-					<form>
-						<h2>Update Course</h2>
-						{/* Image Upload */}
-						<div>
-							<label>Course Image</label>
-							<input
-								type="file"
-								accept="image/*"
-								onChange={handleImageChange}
-							/>
-							{imageUrl && (
-								<div>
-									<img
-										src={imageUrl}
-										alt="Uploaded Preview"
-										style={{ width: "100px", height: "100px", marginTop: "10px" }}
+		<Container maxWidth="lg">
+			<Typography variant="h4" gutterBottom>
+				Update Course
+			</Typography>
+			<Box sx={{ mt: 4 }}>
+				<Grid container spacing={4}>
+					<Grid item xs={12}>
+						<TextField
+							label="Title"
+							fullWidth
+							value={courseData.title}
+							onChange={(e) => handleInputChange("title", e.target.value)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<TextField
+							label="Description"
+							fullWidth
+							multiline
+							rows={4}
+							value={courseData.description}
+							onChange={(e) => handleInputChange("description", e.target.value)}
+						/>
+					</Grid>
+					<Grid item xs={12} sm={6}>
+						<TextField
+							label="Category"
+							fullWidth
+							value={courseData.category}
+							onChange={(e) => handleInputChange("category", e.target.value)}
+						/>
+					</Grid>
+					<Grid item xs={12} sm={6}>
+						<TextField
+							label="Reviews"
+							type="number"
+							fullWidth
+							value={courseData.reviews}
+							onChange={(e) => handleInputChange("reviews", e.target.value)}
+						/>
+					</Grid>
+					<Grid item xs={12} sm={6}>
+						<TextField
+							label="Students Downloaded"
+							type="number"
+							fullWidth
+							value={courseData.studentsDownloaded}
+							onChange={(e) => handleInputChange("studentsDownloaded", e.target.value)}
+						/>
+					</Grid>
+					<Grid item xs={12} sm={6}>
+						<TextField
+							label="Date"
+							type="date"
+							fullWidth
+							InputLabelProps={{ shrink: true }}
+							value={courseData.date.split("T")[0]}
+							onChange={(e) => handleInputChange("date", e.target.value)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Typography variant="h6">Sections</Typography>
+						{courseData.sections.map((section: any, index: number) => (
+							<Card key={section.id} sx={{ mb: 2 }}>
+								<CardContent>
+									<TextField
+										label={`Section ${index + 1} Name`}
+										fullWidth
+										value={section.name}
+										onChange={(e) => handleSectionChange(index, "name", e.target.value)}
 									/>
-								</div>
-							)}
-						</div>
-						{/* Title */}
-						<div>
-							<label>Title</label>
-							<input
-								required
-								type="text"
-								placeholder="Course Title"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-							/>
-						</div>
-
-						{/* Description */}
-						<div>
-							<label>Description</label>
-							<textarea
-								required
-								placeholder="Course Description"
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
-								style={{ width: "100%", height: "150px", padding: "16px" }}
-							/>
-						</div>
-
-						{/* Instructor */}
-						<div>
-							<label>Instructor</label>
-							<input
-								required
-								type="text"
-								placeholder="Instructor ID (Reference)"
-								value={instructor}
-								onChange={(e) => setInstructor(e.target.value)}
-							/>
-						</div>
-
-						{/* Duration */}
-						<div>
-							<label>Duration (in hours)</label>
-							<input
-								required
-								type="number"
-								placeholder="Duration"
-								value={duration}
-								onChange={(e) => setDuration(Number(e.target.value))}
-							/>
-						</div>
-
-						{/* Price */}
-						<div>
-							<label>Price</label>
-							<input
-								required
-								type="number"
-								placeholder="Price"
-								value={price}
-								onChange={(e) => setPrice(Number(e.target.value))}
-							/>
-						</div>
-
-						{/* Category */}
-						<div>
-							<label>Category</label>
-							<select
-								required
-								value={category}
-								onChange={(e) => setCategory(e.target.value)}
-								style={{ width: "100%", height: "49px", padding: "16px" }}
-							>
-								<option value="course">Course</option>
-								<option value="product">Product</option>
-							</select>
-						</div>
-
-						{/* Level */}
-						<div>
-							<label>Level</label>
-							<select
-								required
-								value={level}
-								onChange={(e) => setLevel(e.target.value)}
-								style={{ width: "100%", height: "49px", padding: "16px" }}
-							>
-								<option value="Beginner">Beginner</option>
-								<option value="Intermediate">Intermediate</option>
-								<option value="Advanced">Advanced</option>
-							</select>
-						</div>
-
-						{/* Students */}
-						<div>
-							<label>Enrolled Students (IDs)</label>
-							<input
-								type="text"
-								placeholder="Comma separated student IDs"
-								value={students.join(", ")}
-								onChange={(e) => setStudents(e.target.value.split(",").map((id) => id.trim()))}
-							/>
-						</div>
-
-						{/* Sections */}
-						<div>
-							<h3>Sections</h3>
-							{sections.map((section, sectionIndex) => (
-								<div key={section.id} style={{ marginBottom: "16px", border: "1px solid #ccc", padding: "16px" }}>
-									<h4>Section {sectionIndex + 1}</h4>
-									<div>
-										<label>Section Name</label>
-										<input
-											required
-											type="text"
-											value={section.name}
-											onChange={(e) =>
-												handleSectionChange(sectionIndex, "name", e.target.value)
-											}
-											placeholder="Section Name"
-											style={{ width: "100%", height: "49px", padding: "10px", marginBottom: "16px" }}
-										/>
-									</div>
-									<div>
-										<label>Section Description</label>
-										<textarea
-											required
-											value={section.description}
-											onChange={(e) =>
-												handleSectionChange(sectionIndex, "description", e.target.value)
-											}
-											placeholder="Section Description"
-											style={{ width: "100%", height: "100px", padding: "10px", marginBottom: "16px" }}
-										/>
-									</div>
-
-									{/* Videos */}
-									<div>
-										<h5>Videos</h5>
-										{section.videos.map((video, videoIndex) => (
-											<div
-												key={video.id}
-												style={{ marginBottom: "16px", border: "1px solid #eee", padding: "16px" }}
+									<Divider sx={{ my: 2 }} />
+									{section.modules.map((module: any, modIndex: number) => (
+										<Box key={module.id} sx={{ mb: 2 }}>
+											<Typography variant="subtitle1">{`Module ${modIndex + 1}`}</Typography>
+											<TextField
+												label="Module Name"
+												fullWidth
+												value={module.name}
+												onChange={(e) =>
+													handleSectionChange(index, "modules", [
+														...section.modules.slice(0, modIndex),
+														{ ...module, name: e.target.value },
+														...section.modules.slice(modIndex + 1),
+													])
+												}
+												sx={{ mb: 2 }}
+											/>
+											{module.contents.map((content: any, contentIndex: number) => (
+												<Box key={contentIndex} sx={{ pl: 2, mb: 1 }}>
+													<Typography variant="body1">{`Content ${contentIndex + 1}`}</Typography>
+													<TextField
+														label="Content"
+														fullWidth
+														value={content.name}
+														onChange={(e) =>
+															handleSectionChange(index, "modules", [
+																...section.modules.slice(0, modIndex),
+																{
+																	...module,
+																	contents: [
+																		...module.contents.slice(0, contentIndex),
+																		e.target.value,
+																		...module.contents.slice(contentIndex + 1),
+																	],
+																},
+																...section.modules.slice(modIndex + 1),
+															])
+														}
+													/>
+												</Box>
+											))}
+											<Button
+												variant="text"
+												startIcon={<AddIcon />}
+												onClick={() =>
+													handleSectionChange(index, "modules", [
+														...section.modules.slice(0, modIndex),
+														{
+															...module,
+															contents: [...module.contents, ""], // Add a new empty content field
+														},
+														...section.modules.slice(modIndex + 1),
+													])
+												}
 											>
-												<div>
-													<label>Video Name</label>
-													<input
-														type="text"
-														value={video.name}
-														onChange={(e) =>
-															handleVideoChange(sectionIndex, videoIndex, "name", e.target.value)
-														}
-														placeholder="Video Name"
-														style={{ width: "100%", height: "49px", padding: "10px", marginBottom: "8px" }}
-													/>
-												</div>
-												<div>
-													<label>Video Description</label>
-													<textarea
-														value={video.description}
-														onChange={(e) =>
-															handleVideoChange(sectionIndex, videoIndex, "description", e.target.value)
-														}
-														placeholder="Video Description"
-														style={{
-															width: "100%",
-															height: "100px",
-															padding: "10px",
-															marginBottom: "8px",
-														}}
-													/>
-												</div>
-												<div>
-													<label>Video Link</label>
-													<input
-														type="text"
-														value={video.link}
-														onChange={(e) =>
-															handleVideoChange(sectionIndex, videoIndex, "link", e.target.value)
-														}
-														placeholder="Video Link"
-														style={{ width: "100%", height: "49px", padding: "10px", marginBottom: "8px" }}
-													/>
-												</div>
+												Add Content
+											</Button>
+										</Box>
+									))}
 
-												<button
-													type="button"
-													onClick={() => removeVideoFromSection(sectionIndex, videoIndex)}
-													style={{
-														padding: "8px 16px",
-														backgroundColor: "#ff4d4d",
-														color: "#fff",
-														border: "none",
-														borderRadius: "4px",
-													}}
-												>
-													Remove Video
-												</button>
-											</div>
-										))}
-										<button
-											type="button"
-											onClick={() => addVideoToSection(sectionIndex)}
-											style={{
-												padding: "8px 16px",
-												backgroundColor: "#4caf50",
-												color: "#fff",
-												border: "none",
-												borderRadius: "4px",
-											}}
-										>
-											Add Video
-										</button>
-									</div>
-
-									{/* Remove Section */}
-									<button
-										type="button"
-										onClick={() => removeSection(sectionIndex)}
-										style={{
-											marginTop: "16px",
-											padding: "8px 16px",
-											backgroundColor: "#f44336",
-											color: "#fff",
-											border: "none",
-											borderRadius: "4px",
-										}}
-									>
-										Remove Section
-									</button>
-								</div>
-							))}
-							<button
-								type="button"
-								onClick={addSection}
-								style={{
-									padding: "8px 16px",
-									backgroundColor: "#2196f3",
-									color: "#fff",
-									border: "none",
-									borderRadius: "4px",
-									marginBottom: "16px",
-								}}
-							>
-								Add New Section
-							</button>
-						</div>
-
-
-
-						<Link
-							to="#"
+								</CardContent>
+								<CardActions>
+									<IconButton color="error" onClick={() => removeSection(index)}>
+										<DeleteIcon />
+									</IconButton>
+								</CardActions>
+							</Card>
+						))}
+						<Button
+							startIcon={<AddIcon />}
+							variant="contained"
+							onClick={addSection}
+							sx={{ mt: 2 }}
+						>
+							Add Section
+						</Button>
+					</Grid>
+					<Grid item xs={12}>
+						<Button
+							variant="contained"
+							color="primary"
 							onClick={handleSubmit}
-							style={{
-								display: "inline-block",
-								padding: "10px 20px",
-								backgroundColor: "#4caf50",
-								color: "#fff",
-								textDecoration: "none",
-								borderRadius: "4px",
-								marginTop: "20px",
-								textAlign: "center",
-							}}
+							sx={{ mt: 2 }}
 						>
 							Update Course
-						</Link>
-					</form>
-				</article>
-			</main>
-		</div>
+						</Button>
+					</Grid>
+				</Grid>
+			</Box>
+		</Container>
 	);
 };
 
