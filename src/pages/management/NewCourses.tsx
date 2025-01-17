@@ -699,6 +699,7 @@ const NewCourse = () => {
               Add Module
             </Button>
           </Box>
+          
           <Box mt={4}>
             <Button type="submit" variant="contained" color="primary" fullWidth>
               Create Course

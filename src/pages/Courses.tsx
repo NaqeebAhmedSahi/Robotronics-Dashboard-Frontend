@@ -1,4 +1,7 @@
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
+import { toast, ToastContainer  } from "react-toastify";
+import { useLocation } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
 import AdminSidebar from "../components/AdminSidebar";
 import TableHOC from "../components/TableHOC";
 import { Column } from "react-table";
@@ -180,6 +183,14 @@ const columns: Column<DataType>[] = [
 const Courses = () => {
   const [data, setData] = useState<DataType[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if a message is available in the location state
+    if (location.state?.message) {
+      toast.success(location.state.message);
+    }
+  }, [location.state]);
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -271,7 +282,9 @@ const Courses = () => {
   );
 
   return (
+
     <div className="admin-container">
+      
       <AdminSidebar />
       <main className="products">
         <h1 style={{ textAlign: "center", margin: "20px 0" }}>Courses</h1>
@@ -280,7 +293,9 @@ const Courses = () => {
       <Link to="/admin/course/new" className="create-product-btn">
         <FaPlus />
       </Link>
+      <ToastContainer/>
     </div>
+     
   );
 };
 
