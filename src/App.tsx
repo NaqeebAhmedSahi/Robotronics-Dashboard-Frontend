@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Loader from "./components/Loader";
 import Header from "./components/Header";
+import NewBlogPage from "./pages/management/NewBlogs";
 
 
 // ** pages lazy import
@@ -31,6 +32,8 @@ const TransactionManagement = lazy(() => import("./pages/management/TransactionM
 const NewProduct = lazy(() => import("./pages/management/NewProduct"));
 const NewCourses = lazy(() => import("./pages/management/NewCourses"));
 const NewVideoGallery = lazy(() => import("./pages/management/NewVideoGallery"));
+const NewBlog = lazy(() => import("./pages/management/NewBlogs"));
+
 
 const NewRoboGenius = lazy(() => import("./pages/management/NewRoboGenius"));
 
@@ -69,6 +72,8 @@ const App = () => {
 					<Route path="/admin/Robo_school" element={<RoboSchool />} />
 					<Route path="/admin/JobApplications" element={<JobApplications />} />
 					<Route path="/admin/VideoGallery" element={<VideoGallery />} />
+					{/* <Route path="/admin/Blog" element={<Blogs />} /> */}
+
 
 
 					
@@ -86,6 +91,8 @@ const App = () => {
 					<Route path="/admin/product/new" element={<NewProduct />} />
 					<Route path="/admin/robo_genius/new" element={<NewRoboGenius />} />
 					<Route path="/admin/NewVideoGallery/new" element={<NewVideoGallery />} />
+					<Route path="/admin/NewBlog/new" element={<NewBlog />} />
+
 
 				
 

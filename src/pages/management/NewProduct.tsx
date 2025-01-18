@@ -19,12 +19,17 @@ import axios from "axios";
 import { toast } from "react-toastify";  // Import toast
 import 'react-toastify/dist/ReactToastify.css';  // Import Toastify styles
 import { ToastContainer } from 'react-toastify';
+// import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 
 const NewProduct = () => {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [price, setPrice] = useState<number | undefined>();
   const [category, setCategory] = useState<string>("");
+  const [shippingDays, setShippingDays] = useState<number>(15); // Default value
+
+
   const [stock, setStock] = useState<number | undefined>();
   const [brand, setBrand] = useState<string>("");
   const [images, setImages] = useState<File[]>([]);
@@ -43,6 +48,34 @@ const NewProduct = () => {
     "Lego Robots",
     "Others",
   ];
+
+
+  const marks = [
+    {
+      value: 7,
+      label: '7',
+    },
+    {
+      value: 15,
+      label: '15',
+    },
+    {
+      value: 30,
+      label: '30',
+    },
+    {
+      value: 45,
+      label: '45',
+    },
+    {
+      value: 60,
+      label: '60',
+    },
+  ];
+
+  function valuetext(value: number) {
+    return `${value}°C`;
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
@@ -99,6 +132,7 @@ const NewProduct = () => {
     formData.append("productSold", productSold?.toString() || "");
     formData.append("productWatched", productWatched?.toString() || "");
     formData.append("onSale", onSale ? "yes" : "no");
+    formData.append("shippingDays", shippingDays.toString());
     formData.append("detailsDescription", detailsDescription);
     features.forEach((feature) => formData.append("features", feature));
     images.forEach((image, index) => {
@@ -231,6 +265,21 @@ const NewProduct = () => {
                     />
                   }
                   label="On Sale"
+                />
+              </Grid>
+              <Grid item xs={6}>
+              <Typography variant="h6">Shipping of Product (Days)</Typography>
+                <Slider
+                  aria-label="Restricted values"
+                  defaultValue={15}
+                  getAriaValueText={valuetext}
+                  step={null}
+                  valueLabelDisplay="auto"
+                  marks={marks}
+                  min={7}  // Set minimum value
+                  max={60} // Set maximum value
+                  onChange={(e, newValue) => setShippingDays(newValue as number)} // Update state on change
+                  
                 />
               </Grid>
               <Grid item xs={12}>

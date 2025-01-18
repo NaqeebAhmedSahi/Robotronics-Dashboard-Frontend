@@ -1,237 +1,139 @@
-import React, { useState } from "react";
-import {
-  Typography,
-  Button,
-  TextField,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Grid,
-  Modal,
-} from "@mui/material";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { ReactElement, useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { Column } from "react-table";
+import TableHOC from "../components/TableHOC";
+import { FaTrash } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaPlus, FaTrashAlt, FaEdit } from "react-icons/fa";
 
-interface Blog {
-  id: number;
-  title: string;
-  content: string;
+
+interface Author {
+  name: string;
+  avatar: string;
 }
 
-const BlogPage: React.FC = () => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [newBlog, setNewBlog] = useState({ title: "", content: "" });
-  const [editBlog, setEditBlog] = useState<Blog | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+interface Blog {
+  _id: string;
+  image: string;
+  tags: string[];
+  title: string;
+  description: string;
+  author: Author;
+  date: string;
+  shares: string;
+}
 
-  const handleInputChange = (field: string, value: string) => {
-    if (editBlog) {
-      setEditBlog({ ...editBlog, [field]: value });
-    } else {
-      setNewBlog({ ...newBlog, [field]: value });
-    }
+interface DataType {
+  image: ReactElement;
+  tags: string;
+  title: string;
+  description: string;
+  author: ReactElement;
+  date: string;
+  shares: string;
+  action: ReactElement;
+}
+
+const columns: Column<DataType>[] = [
+  { Header: "Image", accessor: "image" },
+  { Header: "Tags", accessor: "tags" },
+  { Header: "Title", accessor: "title" },
+  { Header: "Description", accessor: "description" },
+  { Header: "Author", accessor: "author" },
+  { Header: "Date", accessor: "date" },
+  { Header: "Shares", accessor: "shares" },
+  { Header: "Action", accessor: "action" },
+];
+
+const BlogPage = () => {
+  const [data, setData] = useState<DataType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/blog/getAllBlogs");
+        if (!response.ok) {
+          throw new Error("Failed to fetch blog posts");
+        }
+        const result = await response.json();
+        console.log(result.data);
+
+        // Assuming the API response structure
+        const blogs: Blog[] = Array.isArray(result.data) ? result.data : [];
+
+        const formattedData = blogs.map((blog) => ({
+          image: (
+            <img
+              src={blog.image}
+              alt={blog.title}
+              style={{ width: "50px", height: "50px", objectFit: "cover" }}
+            />
+          ),
+          tags: blog.tags.join(", "),
+          title: blog.title,
+          description: blog.description,
+          author: (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <img
+                src={blog.author.avatar}
+                alt={blog.author.name}
+                style={{
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "50%",
+                  marginRight: "10px",
+                }}
+              />
+              {blog.author.name}
+            </div>
+          ),
+          date: new Date(blog.date).toLocaleDateString(),
+          shares: blog.shares,
+          action: (
+            <FaTrash
+              style={{ cursor: "pointer", color: "red" }}
+              onClick={() => handleDelete(blog._id)}
+            />
+          ),
+        }));
+
+        setData(formattedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  const handleDelete = (id: string) => {
+    console.log(`Delete blog post with ID: ${id}`);
+    // Implement delete logic here
   };
 
-  const handleAddBlog = () => {
-    if (newBlog.title && newBlog.content) {
-      setBlogs([
-        ...blogs,
-        { id: Date.now(), title: newBlog.title, content: newBlog.content },
-      ]);
-      setNewBlog({ title: "", content: "" });
-    } else {
-      alert("Please fill in all fields");
-    }
-  };
+  const TableComponent = TableHOC<DataType>(
+    columns,
+    data,
+    "dashboard-blog-box",
+    "Blog Posts",
+    true
+  );
 
-  const handleDeleteBlog = (id: number) => {
-    const updatedBlogs = blogs.filter((blog) => blog.id !== id);
-    setBlogs(updatedBlogs);
-  };
-
-  const handleUpdateBlog = (blog: Blog) => {
-    setEditBlog(blog);
-    setModalOpen(true);
-  };
-
-  const handleModalSave = () => {
-    if (editBlog) {
-      const updatedBlogs = blogs.map((blog) =>
-        blog.id === editBlog.id ? editBlog : blog
-      );
-      setBlogs(updatedBlogs);
-      setModalOpen(false);
-      setEditBlog(null);
-    }
-  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="admin-container" >
-      {/* Sidebar */}
+    <div className="admin-container">
       <AdminSidebar />
-
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: "20px", background: "#f5f5f5" }}>
-        <Typography
-          variant="h4"
-          align="center"
-          gutterBottom
-          style={{ marginBottom: "20px", color: "#333" }}
-        >
-          Manage Blogs
-        </Typography>
-
-        {/* Add Blog Form */}
-        <Grid container spacing={3} style={{ marginBottom: "20px" }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Blog Title"
-              variant="outlined"
-              fullWidth
-              value={newBlog.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Blog Content"
-              variant="outlined"
-              fullWidth
-              multiline
-              rows={6} // Adjusted rows for a larger text area
-              style={{
-                background: "#fff",
-                borderRadius: "8px",
-              }}
-              value={newBlog.content}
-              onChange={(e) => handleInputChange("content", e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddBlog}
-              style={{
-                width: "100%",
-                padding: "10px 0",
-                background: "#1976d2",
-                fontSize: "16px",
-              }}
-            >
-              Add Blog
-            </Button>
-          </Grid>
-        </Grid>
-
-        {/* Blogs Table */}
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow style={{ background: "#1976d2" }}>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Title
-                </TableCell>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Content
-                </TableCell>
-                <TableCell align="center" style={{ color: "#fff" }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {blogs.map((blog) => (
-                <TableRow key={blog.id}>
-                  <TableCell align="center">{blog.title}</TableCell>
-                  <TableCell align="center">{blog.content}</TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleUpdateBlog(blog)}
-                    >
-                      <FaEdit />
-                    </IconButton>
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleDeleteBlog(blog.id)}
-                    >
-                      <FaTrashAlt />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-
-      {/* Edit Blog Modal */}
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        aria-labelledby="edit-blog-modal"
-        aria-describedby="edit-blog-form"
-      >
-        <Paper
-          style={{
-            width: "500px",
-            margin: "100px auto",
-            padding: "20px",
-            position: "relative",
-            borderRadius: "10px",
-          }}
-        >
-          <Typography
-            id="edit-blog-modal"
-            variant="h6"
-            align="center"
-            style={{ marginBottom: "20px", color: "#333" }}
-          >
-            Edit Blog
-          </Typography>
-          <TextField
-            label="Blog Title"
-            variant="outlined"
-            fullWidth
-            style={{ marginBottom: "20px" }}
-            value={editBlog?.title || ""}
-            onChange={(e) => handleInputChange("title", e.target.value)}
-          />
-          <TextField
-            label="Blog Content"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={8} // Larger text area for content in the modal
-            style={{
-              background: "#f9f9f9",
-              borderRadius: "8px",
-              marginBottom: "20px",
-            }}
-            value={editBlog?.content || ""}
-            onChange={(e) => handleInputChange("content", e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleModalSave}
-            style={{
-              padding: "10px 0",
-              background: "#1976d2",
-              fontSize: "16px",
-            }}
-          >
-            Save Changes
-          </Button>
-        </Paper>
-      </Modal>
+      <TableComponent />
+      <Link to="/admin/NewBlog/new" className="create-product-btn">
+        <FaPlus />
+      </Link>
     </div>
   );
 };
